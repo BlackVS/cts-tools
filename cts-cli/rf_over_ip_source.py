@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-##################################################
+
+#
+# SPDX-License-Identifier: GPL-3.0
+#
 # GNU Radio Python Flow Graph
 # Title: RF Over IP Source
 # Author: Jonathan Andersson
-# Generated: Thu Apr 30 17:52:51 2020
-##################################################
+# GNU Radio version: 3.8.2.0
 
 import os
 import sys
@@ -12,19 +14,21 @@ sys.path.append(os.environ.get('GRC_HIER_PATH', os.path.expanduser('~/.grc_gnura
 
 from gnuradio import blocks
 from gnuradio import gr
-from gnuradio import zeromq
 from gnuradio.filter import firdes
-from grc_gnuradio import blks2 as grc_blks2
+import signal
+from gnuradio import zeromq
 from tags_to_vars import tags_to_vars  # grc-generated hier_block
 
 
-class rf_over_ip_source(gr.hier_block2):
 
-    def __init__(self, parent=self if 'self' in locals() else None, rx_frequency=1000000, samp_rate=500000, server_address_format="tcp://%s:%d", server_bw_per_port=1000000, server_ip='', server_port_base=10000, throttle=1, zmq_rx_timeout=100):
+
+
+class rf_over_ip_source(gr.hier_block2):
+    def __init__(self, parent=self if 'self' in locals() else None, rx_frequency=1000000, samp_rate=500000, server_address_format="tcp://%s:%d", server_bw_per_port=1000000, server_ip="127.0.0.1", server_port_base=10000, throttle=1, zmq_rx_timeout=100):
         gr.hier_block2.__init__(
             self, "RF Over IP Source",
-            gr.io_signature(0, 0, 0),
-            gr.io_signature(1, 1, gr.sizeof_gr_complex*1),
+                gr.io_signature(0, 0, 0),
+                gr.io_signature(1, 1, gr.sizeof_gr_complex*1),
         )
 
         ##################################################
@@ -55,24 +59,20 @@ class rf_over_ip_source(gr.hier_block2):
             tag_map={"rx_rate": "set_samp_rate(value)"},
         )
         self.blocks_throttle_0_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,False)
-        self.blks2_selector_0 = grc_blks2.selector(
-        	item_size=gr.sizeof_gr_complex*1,
-        	num_inputs=2,
-        	num_outputs=1,
-        	input_index=0 if throttle else 1,
-        	output_index=0,
-        )
+        self.blocks_selector_0 = blocks.selector(gr.sizeof_gr_complex*1,0 if throttle else 1,0)
+        self.blocks_selector_0.set_enabled(True)
 
 
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.blks2_selector_0, 0), (self, 0))
-        self.connect((self.blocks_throttle_0_0, 0), (self.blks2_selector_0, 0))
-        self.connect((self.zeromq_sub_source_0, 0), (self.blks2_selector_0, 1))
+        self.connect((self.blocks_selector_0, 0), (self, 0))
+        self.connect((self.blocks_throttle_0_0, 0), (self.blocks_selector_0, 0))
+        self.connect((self.zeromq_sub_source_0, 0), (self.blocks_selector_0, 1))
         self.connect((self.zeromq_sub_source_0, 0), (self.blocks_throttle_0_0, 0))
         self.connect((self.zeromq_sub_source_0, 0), (self.tags_to_vars_0, 0))
+
 
     def get_parent(self):
         return self.parent
@@ -128,7 +128,7 @@ class rf_over_ip_source(gr.hier_block2):
 
     def set_throttle(self, throttle):
         self.throttle = throttle
-        self.blks2_selector_0.set_input_index(int(0 if self.throttle else 1))
+        self.blocks_selector_0.set_input_index(0 if self.throttle else 1)
 
     def get_zmq_rx_timeout(self):
         return self.zmq_rx_timeout
@@ -148,3 +148,5 @@ class rf_over_ip_source(gr.hier_block2):
 
     def set_server_address(self, server_address):
         self.server_address = server_address
+
+

@@ -1,26 +1,40 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-##################################################
+
+#
+# SPDX-License-Identifier: GPL-3.0
+#
 # GNU Radio Python Flow Graph
 # Title: RX to FIFO
 # Author: Jonathan Andersson
-# Generated: Thu Apr 30 17:52:54 2020
-##################################################
+# GNU Radio version: 3.8.2.0
 
 import os
 import sys
 sys.path.append(os.environ.get('GRC_HIER_PATH', os.path.expanduser('~/.grc_gnuradio')))
 
 from gnuradio import blocks
-from gnuradio import eng_notation
 from gnuradio import gr
-from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
-from optparse import OptionParser
+import signal
+from argparse import ArgumentParser
+from gnuradio.eng_arg import eng_float, intx
+from gnuradio import eng_notation
 from rf_over_ip_source import rf_over_ip_source  # grc-generated hier_block
-import ConfigParser
 import epy_chdir  # embedded python module
 import epy_mkfifo  # embedded python module
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 
 class rx_to_fifo(gr.top_block):
@@ -41,18 +55,18 @@ class rx_to_fifo(gr.top_block):
         # Variables
         ##################################################
         self.config_file = config_file = config_file_path
-        self._server_port_base_config = ConfigParser.ConfigParser()
+        self._server_port_base_config = configparser.ConfigParser()
         self._server_port_base_config.read(config_file)
         try: server_port_base = self._server_port_base_config.getint('main', "server_port_base")
         except: server_port_base = 10000
         self.server_port_base = server_port_base
-        self._server_bw_per_port_config = ConfigParser.ConfigParser()
+        self._server_bw_per_port_config = configparser.ConfigParser()
         self._server_bw_per_port_config.read(config_file)
         try: server_bw_per_port = self._server_bw_per_port_config.getint('main', "server_bw_per_port")
         except: server_bw_per_port = 1000000
         self.server_bw_per_port = server_bw_per_port
         self.server_port = server_port = int(server_port_base + (rx_frequency / server_bw_per_port))
-        self._server_address_format_config = ConfigParser.ConfigParser()
+        self._server_address_format_config = configparser.ConfigParser()
         self._server_address_format_config.read(config_file)
         try: server_address_format = self._server_address_format_config.get("main", "server_address_format")
         except: server_address_format = "tcp://%s:%d"
@@ -84,6 +98,7 @@ class rx_to_fifo(gr.top_block):
         # Connections
         ##################################################
         self.connect((self.rf_over_ip_source_0, 0), (self.blocks_file_sink_0, 0))
+
 
     def get_config_file_path(self):
         return self.config_file_path
@@ -127,24 +142,24 @@ class rx_to_fifo(gr.top_block):
 
     def set_config_file(self, config_file):
         self.config_file = config_file
-        self._server_port_base_config = ConfigParser.ConfigParser()
-        self._server_port_base_config.read(self.config_file)
-        if not self._server_port_base_config.has_section('main'):
-        	self._server_port_base_config.add_section('main')
-        self._server_port_base_config.set('main', "server_port_base", str(None))
-        self._server_port_base_config.write(open(self.config_file, 'w'))
-        self._server_bw_per_port_config = ConfigParser.ConfigParser()
-        self._server_bw_per_port_config.read(self.config_file)
-        if not self._server_bw_per_port_config.has_section('main'):
-        	self._server_bw_per_port_config.add_section('main')
-        self._server_bw_per_port_config.set('main', "server_bw_per_port", str(None))
-        self._server_bw_per_port_config.write(open(self.config_file, 'w'))
-        self._server_address_format_config = ConfigParser.ConfigParser()
+        self._server_address_format_config = configparser.ConfigParser()
         self._server_address_format_config.read(self.config_file)
         if not self._server_address_format_config.has_section("main"):
         	self._server_address_format_config.add_section("main")
         self._server_address_format_config.set("main", "server_address_format", str(None))
         self._server_address_format_config.write(open(self.config_file, 'w'))
+        self._server_bw_per_port_config = configparser.ConfigParser()
+        self._server_bw_per_port_config.read(self.config_file)
+        if not self._server_bw_per_port_config.has_section('main'):
+        	self._server_bw_per_port_config.add_section('main')
+        self._server_bw_per_port_config.set('main', "server_bw_per_port", str(None))
+        self._server_bw_per_port_config.write(open(self.config_file, 'w'))
+        self._server_port_base_config = configparser.ConfigParser()
+        self._server_port_base_config.read(self.config_file)
+        if not self._server_port_base_config.has_section('main'):
+        	self._server_port_base_config.add_section('main')
+        self._server_port_base_config.set('main', "server_port_base", str(None))
+        self._server_port_base_config.write(open(self.config_file, 'w'))
 
     def get_server_port_base(self):
         return self.server_port_base
@@ -198,32 +213,38 @@ class rx_to_fifo(gr.top_block):
         self.blocks_file_sink_0.open(self.fifo)
 
 
+
+
 def argument_parser():
-    parser = OptionParser(usage="%prog: [options]", option_class=eng_option)
-    parser.add_option(
-        "", "--config-file-path", dest="config_file_path", type="string", default="./config.cfg",
-        help="Set Configuration file path [default=%default]")
-    parser.add_option(
-        "", "--rx-frequency", dest="rx_frequency", type="long", default=900000000,
-        help="Set RX Frequency [default=%default]")
-    parser.add_option(
-        "", "--server-ip", dest="server_ip", type="string", default="127.0.0.1",
-        help="Set Server IP [default=%default]")
-    parser.add_option(
-        "", "--throttle", dest="throttle", type="intx", default=1,
-        help="Set Throttle [default=%default]")
-    parser.add_option(
-        "", "--zmq-rx-timeout", dest="zmq_rx_timeout", type="intx", default=1000,
-        help="Set ZMQ RX Timeout [default=%default]")
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--rx-frequency", dest="rx_frequency", type=long, default=900000000,
+        help="Set RX Frequency [default=%(default)r]")
+    parser.add_argument(
+        "--throttle", dest="throttle", type=intx, default=1,
+        help="Set Throttle [default=%(default)r]")
+    parser.add_argument(
+        "--zmq-rx-timeout", dest="zmq_rx_timeout", type=intx, default=1000,
+        help="Set ZMQ RX Timeout [default=%(default)r]")
     return parser
 
 
 def main(top_block_cls=rx_to_fifo, options=None):
     if options is None:
-        options, _ = argument_parser().parse_args()
+        options = argument_parser().parse_args()
+    tb = top_block_cls(rx_frequency=options.rx_frequency, throttle=options.throttle, zmq_rx_timeout=options.zmq_rx_timeout)
 
-    tb = top_block_cls(config_file_path=options.config_file_path, rx_frequency=options.rx_frequency, server_ip=options.server_ip, throttle=options.throttle, zmq_rx_timeout=options.zmq_rx_timeout)
+    def sig_handler(sig=None, frame=None):
+        tb.stop()
+        tb.wait()
+
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, sig_handler)
+    signal.signal(signal.SIGTERM, sig_handler)
+
     tb.start()
+
     tb.wait()
 
 

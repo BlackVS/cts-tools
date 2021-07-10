@@ -6,7 +6,7 @@ all: clean main
 
 .PHONY: main
 main:
-	for grc in $(GRCS); do grcc -d ./ $$grc.grc ; done
+	for grc in $(GRCS); do grcc -o ./ $$grc.grc ; done
 	for hier in $(HIERS); do mv ${HOME}/.grc_gnuradio/$$hier.py ./ ; done
 
 .PHONY: clean

@@ -1,11 +1,13 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-##################################################
+
+#
+# SPDX-License-Identifier: GPL-3.0
+#
 # GNU Radio Python Flow Graph
 # Title: rx_test
 # Author: CTS
-# Generated: Fri Jul  2 18:34:46 2021
-##################################################
+# GNU Radio version: 3.8.2.0
 
 from distutils.version import StrictVersion
 
@@ -17,31 +19,42 @@ if __name__ == '__main__':
             x11 = ctypes.cdll.LoadLibrary('libX11.so')
             x11.XInitThreads()
         except:
-            print "Warning: failed to XInitThreads()"
+            print("Warning: failed to XInitThreads()")
 
 import os
 import sys
 sys.path.append(os.environ.get('GRC_HIER_PATH', os.path.expanduser('~/.grc_gnuradio')))
 
 from PyQt5 import Qt
-from PyQt5 import Qt, QtCore
-from gnuradio import eng_notation
-from gnuradio import gr
 from gnuradio import qtgui
-from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
-from optparse import OptionParser
+import sip
+from gnuradio import gr
+import signal
+from argparse import ArgumentParser
+from gnuradio.eng_arg import eng_float, intx
+from gnuradio import eng_notation
 from rf_over_ip_source import rf_over_ip_source  # grc-generated hier_block
-import ConfigParser
 import epy_chdir  # embedded python module
 import epy_mkfifo  # embedded python module
-import sip
-from gnuradio import qtgui
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
+from gnuradio import qtgui
 
 class rx_test(gr.top_block, Qt.QWidget):
 
-    def __init__(self, config_file_path="./config.cfg", rx_frequency=900000000, server_ip="127.0.0.1", throttle=1, zmq_rx_timeout=1000):
+    def __init__(self, config_file_path="./config.cfg", rx_frequency=900000000, server_ip="34.215.122.191", throttle=1, zmq_rx_timeout=1000):
         gr.top_block.__init__(self, "rx_test")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("rx_test")
@@ -64,10 +77,13 @@ class rx_test(gr.top_block, Qt.QWidget):
 
         self.settings = Qt.QSettings("GNU Radio", "rx_test")
 
-        if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
-            self.restoreGeometry(self.settings.value("geometry").toByteArray())
-        else:
-            self.restoreGeometry(self.settings.value("geometry", type=QtCore.QByteArray))
+        try:
+            if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
+                self.restoreGeometry(self.settings.value("geometry").toByteArray())
+            else:
+                self.restoreGeometry(self.settings.value("geometry"))
+        except:
+            pass
 
         ##################################################
         # Parameters
@@ -82,18 +98,18 @@ class rx_test(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.config_file = config_file = config_file_path
-        self._server_port_base_config = ConfigParser.ConfigParser()
+        self._server_port_base_config = configparser.ConfigParser()
         self._server_port_base_config.read(config_file)
         try: server_port_base = self._server_port_base_config.getint('main', "server_port_base")
         except: server_port_base = 10000
         self.server_port_base = server_port_base
-        self._server_bw_per_port_config = ConfigParser.ConfigParser()
+        self._server_bw_per_port_config = configparser.ConfigParser()
         self._server_bw_per_port_config.read(config_file)
         try: server_bw_per_port = self._server_bw_per_port_config.getint('main', "server_bw_per_port")
         except: server_bw_per_port = 1000000
         self.server_bw_per_port = server_bw_per_port
         self.server_port = server_port = int(server_port_base + (rx_frequency / server_bw_per_port))
-        self._server_address_format_config = ConfigParser.ConfigParser()
+        self._server_address_format_config = configparser.ConfigParser()
         self._server_address_format_config.read(config_file)
         try: server_address_format = self._server_address_format_config.get("main", "server_address_format")
         except: server_address_format = "tcp://%s:%d"
@@ -117,17 +133,17 @@ class rx_test(gr.top_block, Qt.QWidget):
             zmq_rx_timeout=zmq_rx_timeout,
         )
         self.qtgui_time_sink_x_0 = qtgui.time_sink_c(
-        	1024, #size
-        	samp_rate, #samp_rate
-        	"", #name
-        	1 #number of inputs
+            1024, #size
+            samp_rate, #samp_rate
+            "", #name
+            1 #number of inputs
         )
         self.qtgui_time_sink_x_0.set_update_time(0.10)
         self.qtgui_time_sink_x_0.set_y_axis(-2, 2)
 
         self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
 
-        self.qtgui_time_sink_x_0.enable_tags(-1, True)
+        self.qtgui_time_sink_x_0.enable_tags(True)
         self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
         self.qtgui_time_sink_x_0.enable_autoscale(True)
         self.qtgui_time_sink_x_0.enable_grid(False)
@@ -135,25 +151,24 @@ class rx_test(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0.enable_control_panel(True)
         self.qtgui_time_sink_x_0.enable_stem_plot(False)
 
-        if not True:
-          self.qtgui_time_sink_x_0.disable_legend()
 
         labels = ['', '', '', '', '',
-                  '', '', '', '', '']
+            '', '', '', '', '']
         widths = [1, 1, 1, 1, 1,
-                  1, 1, 1, 1, 1]
-        colors = ["blue", "red", "green", "black", "cyan",
-                  "magenta", "yellow", "dark red", "dark green", "blue"]
-        styles = [1, 1, 1, 1, 1,
-                  1, 1, 1, 1, 1]
-        markers = [-1, -1, -1, -1, -1,
-                   -1, -1, -1, -1, -1]
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
         alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
-                  1.0, 1.0, 1.0, 1.0, 1.0]
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
 
-        for i in xrange(2):
+
+        for i in range(2):
             if len(labels[i]) == 0:
-                if(i % 2 == 0):
+                if (i % 2 == 0):
                     self.qtgui_time_sink_x_0.set_line_label(i, "Re{{Data {0}}}".format(i/2))
                 else:
                     self.qtgui_time_sink_x_0.set_line_label(i, "Im{{Data {0}}}".format(i/2))
@@ -166,12 +181,15 @@ class rx_test(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
 
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
+        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_win)
+
+
 
         ##################################################
         # Connections
         ##################################################
         self.connect((self.rf_over_ip_source_0, 0), (self.qtgui_time_sink_x_0, 0))
+
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "rx_test")
@@ -220,24 +238,24 @@ class rx_test(gr.top_block, Qt.QWidget):
 
     def set_config_file(self, config_file):
         self.config_file = config_file
-        self._server_port_base_config = ConfigParser.ConfigParser()
-        self._server_port_base_config.read(self.config_file)
-        if not self._server_port_base_config.has_section('main'):
-        	self._server_port_base_config.add_section('main')
-        self._server_port_base_config.set('main', "server_port_base", str(None))
-        self._server_port_base_config.write(open(self.config_file, 'w'))
-        self._server_bw_per_port_config = ConfigParser.ConfigParser()
-        self._server_bw_per_port_config.read(self.config_file)
-        if not self._server_bw_per_port_config.has_section('main'):
-        	self._server_bw_per_port_config.add_section('main')
-        self._server_bw_per_port_config.set('main', "server_bw_per_port", str(None))
-        self._server_bw_per_port_config.write(open(self.config_file, 'w'))
-        self._server_address_format_config = ConfigParser.ConfigParser()
+        self._server_address_format_config = configparser.ConfigParser()
         self._server_address_format_config.read(self.config_file)
         if not self._server_address_format_config.has_section("main"):
         	self._server_address_format_config.add_section("main")
         self._server_address_format_config.set("main", "server_address_format", str(None))
         self._server_address_format_config.write(open(self.config_file, 'w'))
+        self._server_bw_per_port_config = configparser.ConfigParser()
+        self._server_bw_per_port_config.read(self.config_file)
+        if not self._server_bw_per_port_config.has_section('main'):
+        	self._server_bw_per_port_config.add_section('main')
+        self._server_bw_per_port_config.set('main', "server_bw_per_port", str(None))
+        self._server_bw_per_port_config.write(open(self.config_file, 'w'))
+        self._server_port_base_config = configparser.ConfigParser()
+        self._server_port_base_config.read(self.config_file)
+        if not self._server_port_base_config.has_section('main'):
+        	self._server_port_base_config.add_section('main')
+        self._server_port_base_config.set('main', "server_port_base", str(None))
+        self._server_port_base_config.write(open(self.config_file, 'w'))
 
     def get_server_port_base(self):
         return self.server_port_base
@@ -281,8 +299,8 @@ class rx_test(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.rf_over_ip_source_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
+        self.rf_over_ip_source_0.set_samp_rate(self.samp_rate)
 
     def get_fifo(self):
         return self.fifo
@@ -291,45 +309,50 @@ class rx_test(gr.top_block, Qt.QWidget):
         self.fifo = fifo
 
 
+
+
 def argument_parser():
-    parser = OptionParser(usage="%prog: [options]", option_class=eng_option)
-    parser.add_option(
-        "", "--config-file-path", dest="config_file_path", type="string", default="./config.cfg",
-        help="Set Configuration file path [default=%default]")
-    parser.add_option(
-        "", "--rx-frequency", dest="rx_frequency", type="long", default=900000000,
-        help="Set RX Frequency [default=%default]")
-    parser.add_option(
-        "", "--server-ip", dest="server_ip", type="string", default="127.0.0.1",
-        help="Set Server IP [default=%default]")
-    parser.add_option(
-        "", "--throttle", dest="throttle", type="intx", default=1,
-        help="Set Throttle [default=%default]")
-    parser.add_option(
-        "", "--zmq-rx-timeout", dest="zmq_rx_timeout", type="intx", default=1000,
-        help="Set ZMQ RX Timeout [default=%default]")
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--throttle", dest="throttle", type=intx, default=1,
+        help="Set Throttle [default=%(default)r]")
+    parser.add_argument(
+        "--zmq-rx-timeout", dest="zmq_rx_timeout", type=intx, default=1000,
+        help="Set ZMQ RX Timeout [default=%(default)r]")
     return parser
 
 
 def main(top_block_cls=rx_test, options=None):
     if options is None:
-        options, _ = argument_parser().parse_args()
+        options = argument_parser().parse_args()
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
         style = gr.prefs().get_string('qtgui', 'style', 'raster')
         Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
-    tb = top_block_cls(config_file_path=options.config_file_path, rx_frequency=options.rx_frequency, server_ip=options.server_ip, throttle=options.throttle, zmq_rx_timeout=options.zmq_rx_timeout)
+    tb = top_block_cls(throttle=options.throttle, zmq_rx_timeout=options.zmq_rx_timeout)
+
     tb.start()
+
     tb.show()
+
+    def sig_handler(sig=None, frame=None):
+        Qt.QApplication.quit()
+
+    signal.signal(signal.SIGINT, sig_handler)
+    signal.signal(signal.SIGTERM, sig_handler)
+
+    timer = Qt.QTimer()
+    timer.start(500)
+    timer.timeout.connect(lambda: None)
 
     def quitting():
         tb.stop()
         tb.wait()
+
     qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
-
 
 if __name__ == '__main__':
     main()

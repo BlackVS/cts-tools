@@ -515,7 +515,7 @@ path = os.path.join(os.path.expanduser('~'), "cts.fifo")
 if not os.path.exists(path):
     try:
         os.mkfifo(path)
-    except OSError, e:
+    except OSError as e:
         print("Cannot create FIFO '{}': {}".format(path, e))
     else:
         print("Created FIFO: {}".format(path))
