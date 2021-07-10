@@ -142,7 +142,7 @@ blocks:
     hide: none
     label: RX Frequency
     short_id: ''
-    type: long
+    type: intx
     value: '1000000'
   states:
     bus_sink: false

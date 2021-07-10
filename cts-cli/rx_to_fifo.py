@@ -21,7 +21,6 @@ from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from rf_over_ip_source import rf_over_ip_source  # grc-generated hier_block
-import epy_chdir  # embedded python module
 import epy_mkfifo  # embedded python module
 try:
     import configparser
@@ -218,8 +217,11 @@ class rx_to_fifo(gr.top_block):
 def argument_parser():
     parser = ArgumentParser()
     parser.add_argument(
-        "--rx-frequency", dest="rx_frequency", type=long, default=900000000,
+        "--rx-frequency", dest="rx_frequency", type=intx, default=900000000,
         help="Set RX Frequency [default=%(default)r]")
+    parser.add_argument(
+        "--server-ip", dest="server_ip", type=str, default="127.0.0.1",
+        help="Set Server IP [default=%(default)r]")
     parser.add_argument(
         "--throttle", dest="throttle", type=intx, default=1,
         help="Set Throttle [default=%(default)r]")
@@ -232,7 +234,7 @@ def argument_parser():
 def main(top_block_cls=rx_to_fifo, options=None):
     if options is None:
         options = argument_parser().parse_args()
-    tb = top_block_cls(rx_frequency=options.rx_frequency, throttle=options.throttle, zmq_rx_timeout=options.zmq_rx_timeout)
+    tb = top_block_cls(rx_frequency=options.rx_frequency, server_ip=options.server_ip, throttle=options.throttle, zmq_rx_timeout=options.zmq_rx_timeout)
 
     def sig_handler(sig=None, frame=None):
         tb.stop()

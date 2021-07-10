@@ -35,26 +35,13 @@ from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from rf_over_ip_source import rf_over_ip_source  # grc-generated hier_block
-import epy_chdir  # embedded python module
 import epy_mkfifo  # embedded python module
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
 
 from gnuradio import qtgui
 
 class rx_test(gr.top_block, Qt.QWidget):
 
-    def __init__(self, config_file_path="./config.cfg", rx_frequency=900000000, server_ip="34.215.122.191", throttle=1, zmq_rx_timeout=1000):
+    def __init__(self, config_file_path="./config.cfg", rx_frequency=471000000, server_ip="34.215.122.191"):
         gr.top_block.__init__(self, "rx_test")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("rx_test")
@@ -91,46 +78,27 @@ class rx_test(gr.top_block, Qt.QWidget):
         self.config_file_path = config_file_path
         self.rx_frequency = rx_frequency
         self.server_ip = server_ip
-        self.throttle = throttle
-        self.zmq_rx_timeout = zmq_rx_timeout
 
         ##################################################
         # Variables
         ##################################################
-        self.config_file = config_file = config_file_path
-        self._server_port_base_config = configparser.ConfigParser()
-        self._server_port_base_config.read(config_file)
-        try: server_port_base = self._server_port_base_config.getint('main', "server_port_base")
-        except: server_port_base = 10000
-        self.server_port_base = server_port_base
-        self._server_bw_per_port_config = configparser.ConfigParser()
-        self._server_bw_per_port_config.read(config_file)
-        try: server_bw_per_port = self._server_bw_per_port_config.getint('main', "server_bw_per_port")
-        except: server_bw_per_port = 1000000
-        self.server_bw_per_port = server_bw_per_port
-        self.server_port = server_port = int(server_port_base + (rx_frequency / server_bw_per_port))
-        self._server_address_format_config = configparser.ConfigParser()
-        self._server_address_format_config.read(config_file)
-        try: server_address_format = self._server_address_format_config.get("main", "server_address_format")
-        except: server_address_format = "tcp://%s:%d"
-        self.server_address_format = server_address_format
-        self.server_address = server_address = server_address_format % (server_ip, server_port) if server_address_format != "" else ""
         self.samp_rate = samp_rate = 500000
         self.fifo = fifo = os.path.join(os.path.expanduser('~'), "cts.fifo")
+        self.config_file = config_file = config_file_path
 
         ##################################################
         # Blocks
         ##################################################
-        self.rf_over_ip_source_0 = rf_over_ip_source(
+        self.rf_over_ip_source_1 = rf_over_ip_source(
             parent=self if 'self' in locals() else None,
             rx_frequency=rx_frequency,
             samp_rate=samp_rate,
-            server_address_format=server_address_format,
-            server_bw_per_port=server_bw_per_port,
+            server_address_format="tcp://%s:%d",
+            server_bw_per_port=1000000,
             server_ip=server_ip,
-            server_port_base=server_port_base,
-            throttle=throttle,
-            zmq_rx_timeout=zmq_rx_timeout,
+            server_port_base=10000,
+            throttle=1,
+            zmq_rx_timeout=1000,
         )
         self.qtgui_time_sink_x_0 = qtgui.time_sink_c(
             1024, #size
@@ -188,7 +156,7 @@ class rx_test(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.rf_over_ip_source_0, 0), (self.qtgui_time_sink_x_0, 0))
+        self.connect((self.rf_over_ip_source_1, 0), (self.qtgui_time_sink_x_0, 0))
 
 
     def closeEvent(self, event):
@@ -208,91 +176,14 @@ class rx_test(gr.top_block, Qt.QWidget):
 
     def set_rx_frequency(self, rx_frequency):
         self.rx_frequency = rx_frequency
-        self.set_server_port(int(self.server_port_base + (self.rx_frequency / self.server_bw_per_port)))
-        self.rf_over_ip_source_0.set_rx_frequency(self.rx_frequency)
+        self.rf_over_ip_source_1.set_rx_frequency(self.rx_frequency)
 
     def get_server_ip(self):
         return self.server_ip
 
     def set_server_ip(self, server_ip):
         self.server_ip = server_ip
-        self.set_server_address(self.server_address_format % (self.server_ip, self.server_port) if self.server_address_format != "" else "")
-        self.rf_over_ip_source_0.set_server_ip(self.server_ip)
-
-    def get_throttle(self):
-        return self.throttle
-
-    def set_throttle(self, throttle):
-        self.throttle = throttle
-        self.rf_over_ip_source_0.set_throttle(self.throttle)
-
-    def get_zmq_rx_timeout(self):
-        return self.zmq_rx_timeout
-
-    def set_zmq_rx_timeout(self, zmq_rx_timeout):
-        self.zmq_rx_timeout = zmq_rx_timeout
-        self.rf_over_ip_source_0.set_zmq_rx_timeout(self.zmq_rx_timeout)
-
-    def get_config_file(self):
-        return self.config_file
-
-    def set_config_file(self, config_file):
-        self.config_file = config_file
-        self._server_address_format_config = configparser.ConfigParser()
-        self._server_address_format_config.read(self.config_file)
-        if not self._server_address_format_config.has_section("main"):
-        	self._server_address_format_config.add_section("main")
-        self._server_address_format_config.set("main", "server_address_format", str(None))
-        self._server_address_format_config.write(open(self.config_file, 'w'))
-        self._server_bw_per_port_config = configparser.ConfigParser()
-        self._server_bw_per_port_config.read(self.config_file)
-        if not self._server_bw_per_port_config.has_section('main'):
-        	self._server_bw_per_port_config.add_section('main')
-        self._server_bw_per_port_config.set('main', "server_bw_per_port", str(None))
-        self._server_bw_per_port_config.write(open(self.config_file, 'w'))
-        self._server_port_base_config = configparser.ConfigParser()
-        self._server_port_base_config.read(self.config_file)
-        if not self._server_port_base_config.has_section('main'):
-        	self._server_port_base_config.add_section('main')
-        self._server_port_base_config.set('main', "server_port_base", str(None))
-        self._server_port_base_config.write(open(self.config_file, 'w'))
-
-    def get_server_port_base(self):
-        return self.server_port_base
-
-    def set_server_port_base(self, server_port_base):
-        self.server_port_base = server_port_base
-        self.set_server_port(int(self.server_port_base + (self.rx_frequency / self.server_bw_per_port)))
-        self.rf_over_ip_source_0.set_server_port_base(self.server_port_base)
-
-    def get_server_bw_per_port(self):
-        return self.server_bw_per_port
-
-    def set_server_bw_per_port(self, server_bw_per_port):
-        self.server_bw_per_port = server_bw_per_port
-        self.set_server_port(int(self.server_port_base + (self.rx_frequency / self.server_bw_per_port)))
-        self.rf_over_ip_source_0.set_server_bw_per_port(self.server_bw_per_port)
-
-    def get_server_port(self):
-        return self.server_port
-
-    def set_server_port(self, server_port):
-        self.server_port = server_port
-        self.set_server_address(self.server_address_format % (self.server_ip, self.server_port) if self.server_address_format != "" else "")
-
-    def get_server_address_format(self):
-        return self.server_address_format
-
-    def set_server_address_format(self, server_address_format):
-        self.server_address_format = server_address_format
-        self.set_server_address(self.server_address_format % (self.server_ip, self.server_port) if self.server_address_format != "" else "")
-        self.rf_over_ip_source_0.set_server_address_format(self.server_address_format)
-
-    def get_server_address(self):
-        return self.server_address
-
-    def set_server_address(self, server_address):
-        self.server_address = server_address
+        self.rf_over_ip_source_1.set_server_ip(self.server_ip)
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -300,7 +191,7 @@ class rx_test(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
-        self.rf_over_ip_source_0.set_samp_rate(self.samp_rate)
+        self.rf_over_ip_source_1.set_samp_rate(self.samp_rate)
 
     def get_fifo(self):
         return self.fifo
@@ -308,17 +199,23 @@ class rx_test(gr.top_block, Qt.QWidget):
     def set_fifo(self, fifo):
         self.fifo = fifo
 
+    def get_config_file(self):
+        return self.config_file
+
+    def set_config_file(self, config_file):
+        self.config_file = config_file
+
 
 
 
 def argument_parser():
     parser = ArgumentParser()
     parser.add_argument(
-        "--throttle", dest="throttle", type=intx, default=1,
-        help="Set Throttle [default=%(default)r]")
+        "--rx-frequency", dest="rx_frequency", type=intx, default=471000000,
+        help="Set RX Frequency [default=%(default)r]")
     parser.add_argument(
-        "--zmq-rx-timeout", dest="zmq_rx_timeout", type=intx, default=1000,
-        help="Set ZMQ RX Timeout [default=%(default)r]")
+        "--server-ip", dest="server_ip", type=str, default="34.215.122.191",
+        help="Set Server IP [default=%(default)r]")
     return parser
 
 
@@ -331,7 +228,7 @@ def main(top_block_cls=rx_test, options=None):
         Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
-    tb = top_block_cls(throttle=options.throttle, zmq_rx_timeout=options.zmq_rx_timeout)
+    tb = top_block_cls(rx_frequency=options.rx_frequency, server_ip=options.server_ip)
 
     tb.start()
 
