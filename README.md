@@ -1,6 +1,6 @@
 These are client tools used to connect to the [CTS](https://cts.ninja/) infrastructure and receive RF data (IQ samples) over IP. 
 
-Forked from original + adapted to Python3 and latest GNU.
+Forked from original + adapted to Python3. Tested with Python 3.9, GNU Radio 3.8.2 / Ubuntu 21.04
 
 - [RF Signals Over IP](#rf-signals-over-ip)
 - [Tuning to a Frequency == Connecting to a Port](#tuning-to-a-frequency--connecting-to-a-port)
