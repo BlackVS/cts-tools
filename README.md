@@ -1,4 +1,7 @@
-These are client tools used to connect to the [CTS](https://cts.ninja/) infrastructure and receive RF data (IQ samples) over IP. They need a working GNU Radio 3.7 installation, they're headless, and are configured via command-line options. We tested them with GNU Radio 3.7.14.
+These are client tools used to connect to the [CTS](https://cts.ninja/) infrastructure and receive RF data (IQ samples) over IP. 
+
+Forked from original + adapted to Python3 and latest GNU.
+
 - [RF Signals Over IP](#rf-signals-over-ip)
 - [Tuning to a Frequency == Connecting to a Port](#tuning-to-a-frequency--connecting-to-a-port)
 - [Getting Started](#getting-started)
